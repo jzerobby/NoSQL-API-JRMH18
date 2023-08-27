@@ -1,13 +1,10 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 
 // Import and use the route files
-const usersRoutes = require('./users');
-const thoughtsRoutes = require('./thoughts');
-const reactionsRoutes = require('./reactions');
+const usersRoute = require('./usersRoute');
+const thoughtsRoute = require('./thoughtsRoute');
 
-router.use('/users', usersRoutes);
-router.use('/thoughts', thoughtsRoutes);
-router.use('/thoughts/:thoughtId/reactions', reactionsRoutes);
+router.use('/users', usersRoute);
+router.use('/thoughts', thoughtsRoute);
 
 module.exports = router;
