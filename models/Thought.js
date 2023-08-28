@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const reactionSchema = require('./Reaction'); // Import the Reaction schema
+const dateFormat = require('../utils/date.js')
 
 // Define the Thought schema
 const thoughtSchema = new Schema(
@@ -13,7 +14,7 @@ const thoughtSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      get: timestamp => new Date(timestamp).toISOString() // Format the timestamp on query
+      get: (date) => dateFormat(date)
     },
     username: {
       type: String,

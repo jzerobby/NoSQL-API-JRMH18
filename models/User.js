@@ -27,6 +27,11 @@ const userSchema = new Schema(
         ref: 'User' // Self-referencing the User model for friends
       }
     ]
+  },
+  {
+    toJSON: {
+      virtuals: true,
+    },
   }
 );
 

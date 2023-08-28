@@ -3,104 +3,75 @@ const { User, Thought}  = require('../models');
 
 module.exports = {
   getAllThoughts(req, res) {
-    User.find()
-    .then(async (users) => {
-      const userObj = {
-        users,
-        headCount: await headcount(),
-      };
-      return res.json(userObj);
-    })
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).json(err);
-    });
+    Thought.find()
+    .then((thoughts) => res.json(thoughts))
+    .catch((err) =>  res.status(500).json(err));
   },
 
   getOneThought(req, res) {
-    User.findOne({ _id: req.params.userId })
+    Thought.findOne({ _id: req.params.thoughtId })
     .select('-__v')
-    .then(async (users) =>
-      !users
-        ? res.status(404).json({ message: 'No user ID found' })
-        : res.json({
-          user,
-          grade: await grade(red.params.userId),
-        })
-    )
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).json(err);
-    });
+    .then((thought) => res.json(thought)) 
+    .catch((err) => res.status(500).json(err));
   },
 
-  addNewThought(req,res) {
-    User.create(req.body)
-    .then((user) => res.json(user)) 
-    .catch((err) => res.status(500).json(err));
+  async addNewThought(req, res) {
+    try {
+      const newThought = await Thought.create(req.body)
+      if (newThought) {
+        await User.findOneAndUpdate(
+          { _id: req.body.userId },
+          { $addToSet: { thoughts: newThought._id } },
+          { new: true }
+        );
+      }
+      res.json('Thought created')
+    } catch (err) { res.status(500).json(err) }
   },
 
   updateThought(req,res) {
-    User.updateOne(req.body)
-    .then((user) => res.json(user)) 
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId }, 
+      { $set: req.body }, 
+      { new: true }
+    )
+    .then((thought) => res.json(thought)) 
     .catch((err) => res.status(500).json(err));
   },
 
-  removeThought(req, res) {
-    User.findOneAndRemove({ _id: req.params.userId })
-    .then((user) =>
-      !user
-      ? res.status(404).json({ message: 'No user found' })
-      :Thought.findOneAndUpdate(
-        { users: req.params.userId },
-        { $pull: { users: req.params.userId} },
-        { new: true }
-      )
-    ) 
-    .then((thought) =>
-     !thought
-     ? res.status(404).json({
-      message: 'User removed, but no thoughts found'
-     })
-     : res.json({ message: 'User successfully removed'})
-    )
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
-    })
+  async removeThought(req, res) {
+    try {
+      const deleteThought = await Thought.create(req.body)
+      if (deleteThought) {
+        await User.findOneAndUpdate(
+          { _id: req.body.userId },
+          { $pull: { thoughts: deleteThought._id } },
+          { new: true }
+        );
+      }
+      res.json('Thought removed')
+    } catch (err) { res.status(500).json(err) }
   },
 
   addNewReaction(req, res) {
-    console.log('You are adding a friend');
-    console.log(req.body);
-    User.findOneAndUpdate(
-        { _id: req.params.userId },
-        { $addToSet: { thoughts: req.body } },
+    console.log('You are adding a reaction');
+    Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $addToSet: { reactions: { reactionId: req.params.reactionId } } },
         { runValidators: true, new: true }
     ) 
-    .then((user) =>
-     !user
-      ? res
-        .status(404)
-        .json({ message: "No user ID found" })
-      : res.json(user)
-    )
+    .then((thought) => res.json(thought)) 
     .catch((err) => res.status(500).json(err));
   },
 
   removeReaction(req, res) {
-    User.findOneAndUpdate(
-      { _id: req.params.userId },
-      { $pull: { thought: { thoughtId: req.params.thoughtId } } },
-      { runValidators: true, new: true }
-    )
-    .then((user) =>
-     !user
-      ? res
-        .status(404)
-        .json({ message: "No user ID found" })
-      : res.json(user)
-    )
+    console.log('You are removing a reaction');
+    Thought.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $pull: { reactions: { reactionId: req.params.reactionId } } },
+        { runValidators: true, new: true }
+    ) 
+    .then((thought) => res.json(thought)) 
     .catch((err) => res.status(500).json(err));
-  },
+  }
 };
