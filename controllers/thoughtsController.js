@@ -1,32 +1,106 @@
-const Thought = require('../models/Thought');
-const User = require('../models/User');
+const { ObjectId } = require('mongoose').Types;
+const { User, Thought}  = require('../models');
 
-const thoughtsController = {
-  getAllThoughts: async (req, res) => {
-    try {
-      const thoughts = await Thought.find();
-      res.json(thoughts);
-    } catch (err) {
-      res.status(500).json({ message: 'Server error' });
-    }
+module.exports = {
+  getAllThoughts(req, res) {
+    User.find()
+    .then(async (users) => {
+      const userObj = {
+        users,
+        headCount: await headcount(),
+      };
+      return res.json(userObj);
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json(err);
+    });
   },
 
-  createThought: async (req, res) => {
-    try {
-      const { thoughtText, username, userId } = req.body;
-      const newThought = new Thought({ thoughtText, username });
-      const thought = await newThought.save();
+  getOneThought(req, res) {
+    User.findOne({ _id: req.params.userId })
+    .select('-__v')
+    .then(async (users) =>
+      !users
+        ? res.status(404).json({ message: 'No user ID found' })
+        : res.json({
+          user,
+          grade: await grade(red.params.userId),
+        })
+    )
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json(err);
+    });
+  },
 
-      // Push the created thought's _id to the associated user's thoughts array field
-      const user = await User.findById(userId);
-      user.thoughts.push(thought._id);
-      await user.save();
+  addNewThought(req,res) {
+    User.create(req.body)
+    .then((user) => res.json(user)) 
+    .catch((err) => res.status(500).json(err));
+  },
 
-      res.json(thought);
-    } catch (err) {
-      res.status(400).json({ message: 'Invalid data' });
-    }
+  updateThought(req,res) {
+    User.updateOne(req.body)
+    .then((user) => res.json(user)) 
+    .catch((err) => res.status(500).json(err));
+  },
+
+  removeThought(req, res) {
+    User.findOneAndRemove({ _id: req.params.userId })
+    .then((user) =>
+      !user
+      ? res.status(404).json({ message: 'No user found' })
+      :Thought.findOneAndUpdate(
+        { users: req.params.userId },
+        { $pull: { users: req.params.userId} },
+        { new: true }
+      )
+    ) 
+    .then((thought) =>
+     !thought
+     ? res.status(404).json({
+      message: 'User removed, but no thoughts found'
+     })
+     : res.json({ message: 'User successfully removed'})
+    )
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    })
+  },
+
+  addNewReaction(req, res) {
+    console.log('You are adding a friend');
+    console.log(req.body);
+    User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $addToSet: { thoughts: req.body } },
+        { runValidators: true, new: true }
+    ) 
+    .then((user) =>
+     !user
+      ? res
+        .status(404)
+        .json({ message: "No user ID found" })
+      : res.json(user)
+    )
+    .catch((err) => res.status(500).json(err));
+  },
+
+  removeReaction(req, res) {
+    User.findOneAndUpdate(
+      { _id: req.params.userId },
+      { $pull: { thought: { thoughtId: req.params.thoughtId } } },
+      { runValidators: true, new: true }
+    )
+    .then((user) =>
+     !user
+      ? res
+        .status(404)
+        .json({ message: "No user ID found" })
+      : res.json(user)
+    )
+    .catch((err) => res.status(500).json(err));
   },
 };
-
-module.exports = thoughtsController;
