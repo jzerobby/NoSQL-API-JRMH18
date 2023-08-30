@@ -5,6 +5,14 @@ Using MongoDB for database, I built a web application with API for a social netw
 
 ## Insomnia Screenshots
 
+Thoughts API:
+
+![ThoughtsAPI](images/ThoughtsScreenshot.png)
+
+Users API:
+
+![UsersAPI](images/UsersScreenshot.png)
+
 ## Links
 
 Walkthrough Video: https://watch.screencastify.com/v/clesD5uWHajCSSlw6s1E
