@@ -7,6 +7,6 @@ Using MongoDB for database, I built a web application with API for a social netw
 
 ## Links
 
-Walkthrough Video: 
+Walkthrough Video: https://watch.screencastify.com/v/clesD5uWHajCSSlw6s1E
 
-GitHub Repository: 
+GitHub Repository: https://github.com/jzerobby/NoSQL-API-JRMH18
